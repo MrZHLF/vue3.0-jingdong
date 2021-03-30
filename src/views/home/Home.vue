@@ -20,7 +20,7 @@ import Docker from './Docker.vue'
   }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .wrapper {
   overflow-y: auto;
   position: absolute;

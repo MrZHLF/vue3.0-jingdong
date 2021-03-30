@@ -1,11 +1,27 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import Home from '../views/home/Home.vue'
-
 const routes = [
   {
-    path: '/a',
+    path: '/',
     name: 'Home',
-    component: Home
+    component: () => import(/* webpackChunkName: "home" */ '../views/home/Home')
+  },
+  , {
+    path: '/login',
+    name: 'Login',
+    component: () => import(/* webpackChunkName: "login" */ '../views/login/Login'),
+    beforeEnter(to, from, next) {
+      const { isLogin } = localStorage;
+      isLogin ? next({ name: 'Home'}):  next();
+    }
+  }
+  ,{
+    path: '/register',
+    name: 'Register',
+    component: () => import(/* webpackChunkName: "register" */ '../views/register/Register'),
+    beforeEnter(to, from, next) {
+      const { isLogin } = localStorage;
+      isLogin ? next({ name: 'Home'}):  next();
+    }
   },
   {
     path: '/about',
@@ -19,4 +35,11 @@ const router = createRouter({
   routes
 })
 
+// 路由守卫
+router.beforeEach((to, from ,next) => {
+  const { isLogin } = localStorage;
+  const { name } = to;
+  const isLoginOrRegister = (name === "Login" || name === "Register");
+  (isLogin || isLoginOrRegister) ? next() : next({ name: 'Login'});
+})
 export default router
