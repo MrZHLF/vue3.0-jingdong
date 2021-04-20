@@ -19,7 +19,7 @@
         </div>
         <div class="product__number">
           <span class="product__number__minus iconfont" @click="()=>{ changeCartItemInfo(shopId,item._id,item, -1) }">&#xe691;</span>
-            {{item.count || 0}}
+            {{cartList?.[shopId]?.[item._id]?.count || 0}}
           <span class="product__number__plus iconfont" @click="()=>{ changeCartItemInfo(shopId,item._id,item, 1) }">&#xe668;</span>
         </div>
       </div>
@@ -77,14 +77,15 @@ export default {
     const shopId = route.params.id
     const {curentTab,handleTabClick } = userTabEffect()
     const {list} = userCurrentListEffect(curentTab,shopId)
-    const {changeCartItemInfo } = useCommonCartEffect()
+    const {changeCartItemInfo, cartList } = useCommonCartEffect()
     return {
       shopId,
       list,
       categories,
       curentTab,
       handleTabClick,
-      changeCartItemInfo
+      changeCartItemInfo,
+      cartList
     }
   }
 }

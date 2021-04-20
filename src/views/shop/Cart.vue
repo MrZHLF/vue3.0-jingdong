@@ -1,10 +1,25 @@
 <template>
+  <div
+    class="mask"
+    v-if="showCart"
+    @click="handleCartShowChange"
+  />
   <div class="cart">
-
-    <div class="product">
+    <div class="product" v-if="showCart">
+      <div class="product__header">
+        <div class="product__header__all" @click="() => setCartItemsChecked(shopId)">
+          <span class="product__header__icon iconfont" v-html="allChecked ? '&#xe652;': '&#xe667;'"></span>
+          全选
+        </div>
+        <div class="product__header__clear" 
+        @click="() => cleanCartProducts(shopId)">
+          清空购物车
+        </div>
+      </div>
       <template  v-for="item in productList" :key="item._id">
         <div class="product__item" v-if="item.count > 0">
-          <div class="product__item__checked iconfont" v-html="item.check ? '&#xe652;': '&#xe667;'"></div>
+          <div class="product__item__checked iconfont" v-html="item.check ? '&#xe652;': '&#xe667;'" 
+          @click="() => changeCartItemChecked(shopId,item._id)"></div>
           <img class="product__item__img" :src="item.imgUrl" alt="">
           <div class="product__item__detail">
             <h4 class="product__item__title">{{item.name}}</h4>
@@ -24,7 +39,7 @@
 
     <div class="check">
       <div class="check__icon">
-        <img class="check__icon__img" src="http://www.dell-lee.com/imgs/vue3/basket.png" alt="">
+        <img class="check__icon__img" @click="handleCartShowChange" src="http://www.dell-lee.com/imgs/vue3/basket.png" alt="">
         <div class="check__icon__tag">{{total}}</div>
       </div>
       <div class="check__info">
@@ -36,7 +51,7 @@
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useStore } from 'vuex'
 import { useRoute } from 'vue-router'
 import { useCommonCartEffect } from './commonCartEffect'
@@ -63,21 +78,55 @@ const useCartEffect = (shopId) => {
       if (productList) {
         for (let i in productList) {
           const product = productList[i]
-          count += (product.count * product.price)
+          if(product.count) {
+            count += (product.count * product.price)
+          }
         }
       }
       return count.toFixed(2)
+    })
+
+    const allChecked = computed(() => {
+      // 是否全选
+      const productList = cartList[shopId]
+      let result = true
+      if (productList) {
+        for (let i in productList) {
+          const product = productList[i]
+          if(product.count > 0 && !product.check) {
+            result = false
+          }
+        }
+      }
+      return result
     })
 
     const productList = computed(() => {
       const productList = cartList[shopId]
       return productList
     })
+  const changeCartItemChecked = (shopId,productId) =>{
+    console.log(shopId,productId,'shopId,productId')
+    store.commit('changeCartItemChecked',{shopId,productId})
+  }  
+
+  const cleanCartProducts = (shopId) => {
+    // 清空购物车
+    store.commit('clearCartProducts',{shopId})
+  }
+
+  const setCartItemsChecked = (shopId) => {
+    store.commit('setCartItemsChecked',{shopId})
+  }
   return {
     total,
     price,
     productList,
-    changeCartItemInfo
+    changeCartItemInfo,
+    changeCartItemChecked,
+    cleanCartProducts,
+    allChecked,
+    setCartItemsChecked
   }
 }
 export default {
@@ -85,14 +134,26 @@ export default {
   setup () {
     const route = useRoute()
     const shopId = route.params.id
-    const { total, price,productList,changeCartItemInfo } = useCartEffect(shopId)
+    const showCart = ref(false)
+
+  const handleCartShowChange = () =>{
+    showCart.value = !showCart.value
+  }
+
+    const { total, price,productList,changeCartItemInfo,changeCartItemChecked,cleanCartProducts,allChecked,setCartItemsChecked } = useCartEffect(shopId)
     
     return {
+      showCart,
       productList,
       total,
       price,
       shopId,
-      changeCartItemInfo
+      changeCartItemInfo,
+      changeCartItemChecked,
+      cleanCartProducts,
+      allChecked,
+      setCartItemsChecked,
+      handleCartShowChange
     }
   }
 }
